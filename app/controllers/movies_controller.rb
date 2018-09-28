@@ -12,11 +12,17 @@ class MoviesController < ApplicationController
 
   def index
     @all_ratings = Movie.ratings
-    @sort = params[:sort] 
+    @sort = params[:sort]||session[:sort]
+    session[:ratings] = session[:ratings]|| {'G'=>'','PG'=>'','PG-13'=>'','R'=>''}
     #@movies = Movie.all.order(@sort)
-    params[:ratings].nil? ? @t_param = @all_ratings : @t_param = params[:ratings].keys
-    @movies = Movie.where(rating: @t_param).order(@sort)
-    
+    @t_param = params[:ratings] || session[:ratings]
+    session[:sort] = @sort
+    session[:ratings] = @t_param
+    @movies = Movie.where(rating: session[:ratings].keys).order(session[:sort])
+    if (params[:sort].nil? and !(session[:sort].nil?)) or (params[:ratings].nil? and !(session[:ratings].nil?))
+        flash.keep
+        redirect_to movies_path(sort: session[:sort],ratings: session[:ratings])
+    end
     #if(params[:title_clicked])
     #    @movies = Movie.order(:title)
     #    params['title_header'].class = 'hilite'        
